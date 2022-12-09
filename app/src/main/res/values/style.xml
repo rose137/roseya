@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?><resources>
+
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Primary brand color. -->
+
+<!--        <item name="colorPrimary">@color/utama</item>-->
+<!--        &lt;!&ndash;        <item name="colorPrimaryDark">@color/colorPrimary</item>&ndash;&gt;-->
+<!--        <item name="colorAccent">@color/utama</item>-->
+<!--        <item name="colorSecondary">@color/utama</item>-->
+        <item name="colorOnPrimary">@color/colorAccent</item>
+        <item name="colorPrimaryDark">@android:color/holo_orange_dark</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <!-- Secondary brand color. -->
+        <item name="android:windowAnimationStyle">@style/CustomActivityAnimation</item>
+        <!-- Status bar color. --><!-- Customize your theme here. -->
+    </style>
+    <style name="CustomActivityAnimation" parent="@android:style/Animation.Activity">
+
+    </style>
+    <style name="viewParent">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="viewParent.headerText">
+        <item name="android:textColor">@color/contentTextColor</item>
+        <item name="android:textSize">@dimen/headerTextSize</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="viewParent.headerText.NoMode">
+        <item name="android:textColor">@color/darkTextColor</item>
+    </style>
+    <style name="parent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="Toolbar.TitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+    <style name="SearchView" parent="">
+        <item name="android:editTextColor">@color/utama</item>
+        <item name="android:textColorHint">@color/utama</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="modifiedEditText" parent="parent">
+        <item name="android:textSize">@dimen/newsMoreTextSize</item>
+        <item name="android:backgroundTint">@color/whiteTextColor</item>
+    </style>
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+    <style name="Circular">
+        <item name="cornerSize">50%</item>
+
+    </style>
+    <style name="DialogAnimation">
+        <item name="android:windowEnterAnimation">@android:anim/slide_in_left </item>
+        <item name="android:windowExitAnimation">@android:anim/slide_out_right</item>
+    </style>
+    <style name="RoundedCornersDialog" parent="@style/Theme.MaterialComponents.Dialog">
+        <item name="dialogCornerRadius">16dp</item>
+    </style>
+</resources>

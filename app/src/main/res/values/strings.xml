@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">roseya</string>
+    <string name="login_email_hint">Email</string>
+    <string name="login_password_hint">Password</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="mengenal_ilmuwan_islam">Mengenal ilmuwan islam yang penemuannya sudah dikenal dan digunakan oleh dunia sampai saat ini.</string>
+    <string name="copyright">\u00A9 Rosi 2022</string>
+
+</resources>
