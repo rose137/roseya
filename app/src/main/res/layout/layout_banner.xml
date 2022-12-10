@@ -27,14 +27,7 @@
             android:layout_marginStart="16dp"
             android:orientation="horizontal" />
 
-<!--&lt;!&ndash;        <TextView&ndash;&gt;-->
-<!--&lt;!&ndash;            android:layout_width="wrap_content"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:layout_height="wrap_content"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:layout_alignParentEnd="true"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:layout_marginEnd="16dp"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:text="Lihat Semua Promo"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:textColor="#00C853"&ndash;&gt;-->
-<!--&lt;!&ndash;            android:textSize="12sp" />&ndash;&gt;-->
+
 
     </RelativeLayout>
 

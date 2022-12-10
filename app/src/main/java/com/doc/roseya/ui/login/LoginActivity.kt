@@ -1,9 +1,11 @@
 package com.doc.roseya.ui.login
 
+import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import com.doc.roseya.base.BaseActivity
@@ -34,11 +36,17 @@ class LoginActivity : BaseActivity() ,  View.OnClickListener {
     val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     val currentDate = sdf.format(Date())
     private lateinit var prefManager: PrefManager
+    lateinit var progressBar: ProgressBar
+    lateinit var progressDialog: ProgressDialog
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+        progressBar = findViewById(R.id.pbLoading)
+        progressDialog = ProgressDialog(this)
+        progressDialog.setTitle("Mohon Tunggu")
+        progressDialog.setCancelable(false)
         init()
         checkLogin()
         var tv_click_Login = findViewById<Button>(R.id.cirLoginButton)
@@ -71,6 +79,8 @@ class LoginActivity : BaseActivity() ,  View.OnClickListener {
 
     private fun GetDataLogin() {
 
+        progressBar.visibility = View.VISIBLE
+        progressDialog.show()
         val multipartBody: MultipartBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM) // Header to show we are sending a Multipart Form Data
             .addFormDataPart("email", email.text.toString()) // file param
@@ -86,10 +96,13 @@ class LoginActivity : BaseActivity() ,  View.OnClickListener {
         okHttpClient.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
+                progressDialog.dismiss()
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
+                    progressDialog.dismiss()
+//                    progressBar.visibility = View.GONE
                     val responseBodyCopy2 = response.peekBody(Long.MAX_VALUE)
 //                        responseBodyCopy.string();
                     val JSONObject = JSONObject(responseBodyCopy2.string())
@@ -99,6 +112,7 @@ class LoginActivity : BaseActivity() ,  View.OnClickListener {
 
 
                     if(ResposeCode.equals("0")){
+
                         ResposeData = JSONObject.getString("data")
                         var Data = ResposeData.replace("[","").replace("]","")
                         val JSONObject2 = JSONObject(Data)
@@ -153,6 +167,7 @@ class LoginActivity : BaseActivity() ,  View.OnClickListener {
                         object : Thread() {
                             override fun run() {
                                 this@LoginActivity.runOnUiThread(Runnable {
+                                    progressDialog.dismiss()
                                     Toast.makeText(this@LoginActivity, "Email / Password Salah", Toast.LENGTH_SHORT).show()
                                     //Do your UI operations like dialog opening or Toast here
                                 })
@@ -163,6 +178,7 @@ class LoginActivity : BaseActivity() ,  View.OnClickListener {
                         object : Thread() {
                             override fun run() {
                                 this@LoginActivity.runOnUiThread(Runnable {
+                                    progressDialog.dismiss()
                                     Toast.makeText(this@LoginActivity, "Email / Password Salah", Toast.LENGTH_SHORT).show()
                                     //Do your UI operations like dialog opening or Toast here
                                 })
@@ -171,6 +187,7 @@ class LoginActivity : BaseActivity() ,  View.OnClickListener {
                     }
 
                 } else {
+                    progressDialog.dismiss()
                     // handle different cases for different status codes or dump them all here
                 }
             }

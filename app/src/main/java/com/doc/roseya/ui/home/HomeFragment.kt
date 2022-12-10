@@ -2,6 +2,7 @@ package com.doc.roseya.ui.profile
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.ProgressDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -12,7 +13,6 @@ import android.graphics.drawable.ColorDrawable
 import android.location.Address
 import android.location.Geocoder
 import android.location.LocationManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
@@ -29,19 +29,21 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.LinearSnapHelper
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SnapHelper
+import androidx.recyclerview.widget.*
 import androidx.room.Room
 import com.doc.roseya.R
 import com.doc.roseya.adapter.IlmuwanMainAdapter
+import com.doc.roseya.adapter.NewsAdapter
 import com.doc.roseya.adapter.SliderPagerAdapter
 import com.doc.roseya.decoration.BannerSlider
 import com.doc.roseya.decoration.SliderIndicator
 import com.doc.roseya.fragment.FragmentJadwalSholat
 import com.doc.roseya.fragment.FragmentSlider
 import com.doc.roseya.model.IlmuwanModel
+import com.doc.roseya.model.ModelArticle
+import com.doc.roseya.model.ModelNews
+import com.doc.roseya.network.ApiInterfaceNews
+import com.doc.roseya.network.ApiService.Companion.getApiClient
 import com.doc.roseya.room.databaseDao.DatabaseDAO
 import com.doc.roseya.session.PrefManager
 import com.doc.roseya.ui.alquran.MainAlquranActivity
@@ -51,9 +53,13 @@ import com.doc.roseya.ui.ilmuwan.data.ItemClickSupport
 import com.doc.roseya.ui.ilmuwan.data.MainData
 import com.doc.roseya.ui.kisahnabi.KisahNabiActivity
 import com.doc.roseya.ui.login.LoginActivity
+import com.doc.roseya.utils.Utils.getCountry
 import com.google.android.gms.location.*
+import com.google.android.material.internal.ViewUtils.dpToPx
+import kotlinx.android.synthetic.main.activity_main_alquran.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.layout_kategori.*
+import okhttp3.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -61,7 +67,7 @@ import java.util.*
 class HomeFragment : Fragment() {
     lateinit var db: DatabaseDAO
     lateinit var database: DatabaseDAO
-
+    var API_KEY = "c550ddefbb614ccbbbb39d8ef78b1f2a"
     private lateinit var txt_tanggal: TextView
     private lateinit var txt_hari: TextView
     private lateinit var txt_lokasi: TextView
@@ -85,7 +91,7 @@ class HomeFragment : Fragment() {
     //    val appContext = requireContext().applicationContext
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var prefManager: PrefManager
-
+    private lateinit var rvNews: RecyclerView
     private lateinit var rvMain: RecyclerView
 //    private val rvMain: RecyclerView? = null
     private var mAdapter: SliderPagerAdapter? = null
@@ -95,8 +101,26 @@ class HomeFragment : Fragment() {
     private lateinit var  mLinearLayout : LinearLayout
     private lateinit var  bannerSlider : BannerSlider
     private val list: ArrayList<IlmuwanModel> = ArrayList<IlmuwanModel>()
+    private val listNews: ArrayList<ModelNews> = ArrayList<ModelNews>()
+    var TotalResult = "";
+    var _id = String()
+    var _author = String()
+    var _title = String()
+    var _description = String()
+    var _url = String()
+    var _urlToImage = String()
+    var _publishedAt = String()
+    var _content = String()
+    var _name = String()
+    var articles = "";
+    var source = "";
+    lateinit var progressBar: ProgressBar
+    lateinit var progressDialog: ProgressDialog
 
-
+    var strCategory = "technology"
+    var strCountry: String? = null
+    var modelArticle: MutableList<ModelArticle> = ArrayList()
+    var newsAdapter: NewsAdapter? = null
     companion object {
         fun newInstance() = HomeFragment()
 
@@ -131,18 +155,31 @@ class HomeFragment : Fragment() {
         mLinearLayout = rootView.findViewById(R.id.pagesContainer)
         //        txtFooter = findViewById(R.id.txt_footer);
         rvMain = rootView.findViewById<RecyclerView>(R.id.rv_main)
+        rvNews = rootView.findViewById(R.id.rvListNews)
+        rvNews.setLayoutManager(LinearLayoutManager(context))
         rvMain.setHasFixedSize(true)
+        rvNews.setHasFixedSize(true)
+//        listNews.addAll(MainData.getListData())
         list.addAll(MainData.getListData())
-        // load animation
+
+        //reload news
+//        imageRefresh.setOnClickListener {
+//            rvListNews.showShimmerAdapter()
+//            getListNews()
+//        }
 
         // load animation
         one = AnimationUtils.loadAnimation(requireActivity(), R.anim.one)
         two = AnimationUtils.loadAnimation(requireActivity(), R.anim.two)
         rvMain.startAnimation(one)
+        rvMain.addItemDecoration(DividerItemDecoration(context, 0))
 
         showRecyclerList()
-
         setupSlider()
+        getListNews()
+
+
+
 //        thiscontext = container?.getContext();
         val dateNow = Calendar.getInstance().time
         strDateNow = DateFormat.format("d MMMM yyyy", dateNow) as String
@@ -221,14 +258,42 @@ class HomeFragment : Fragment() {
 
 }
 
+    //set api
+    private fun getListNews() {
+
+        //get country/
+        strCountry = getCountry()
+
+        //set api
+        val apiInterface = getApiClient().create(ApiInterfaceNews::class.java)
+        val call = apiInterface.getHeadlines(strCountry, API_KEY)
+        call.enqueue(object : retrofit2.Callback<ModelNews> {
+            override fun onResponse(call: retrofit2.Call<ModelNews>, response: retrofit2.Response<ModelNews>) {
+                if (response.isSuccessful && response.body() != null) {
+                    modelArticle = response.body()?.modelArticle as MutableList<ModelArticle>
+                    newsAdapter = NewsAdapter(modelArticle, context!!)
+                    rvListNews.adapter = newsAdapter
+                    newsAdapter?.notifyDataSetChanged()
+//                    rvListNews.hideShimmerAdapter()
+                }
+            }
+
+            override fun onFailure(call: retrofit2.Call<ModelNews>, t: Throwable) {
+                Toast.makeText(context, "Oops, jaringan kamu bermasalah.", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
     private fun showRecyclerList() {
         val snapHelper: SnapHelper = LinearSnapHelper()
         snapHelper.attachToRecyclerView(rvMain)
         val linearLayoutManager = LinearLayoutManager(requireActivity(), LinearLayoutManager.HORIZONTAL, false)
         rvMain.layoutManager = linearLayoutManager
+
         val listMainAdapter = IlmuwanMainAdapter(requireActivity())
         listMainAdapter.listMain = list
         rvMain.adapter = listMainAdapter
+
 
         ItemClickSupport.addTo(rvMain).setOnItemClickListener(object :
             ItemClickSupport.OnItemClickListener {
@@ -362,25 +427,6 @@ try{
                 override fun run() {
                     requireActivity().runOnUiThread(Runnable {
                         showAlertDialog2(R.layout.dialog_alamat_detail)
-//                                    val alertDialogBuilder = AlertDialog.Builder(this@RegisterActivity)
-//                        val builder = AlertDialog.Builder(requireActivity(), R.style.RoundedCornersDialog)
-//                        builder.setTitle("DETAIL ALAMAT")
-//                        builder.setMessage(AlamatDetail)
-//                        builder.setPositiveButton(android.R.string.yes) { dialog, which ->
-////                                        Toast.makeText(applicationContext,
-////                                            android.R.string.yes, Toast.LENGTH_SHORT).show()
-//                        }
-//                        builder.setNeutralButton("COPY"){ dialog, which ->
-//                            var txt = AlamatDetail
-//                            var myClip = ClipData.newPlainText("text", txt);
-//                            myClipboard?.setPrimaryClip(myClip);
-//                            Toast.makeText(requireContext(), "Text Copied",
-//                                Toast.LENGTH_SHORT).show();
-//                        }
-//
-//                        builder.show()
-//                                    Toast.makeText(this@RegisterActivity, ResposeMessage, Toast.LENGTH_LONG).show()
-                        //Do your UI operations like dialog opening or Toast here
                     })
                 }
             }.start()

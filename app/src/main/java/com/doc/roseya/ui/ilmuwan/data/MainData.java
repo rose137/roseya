@@ -19,6 +19,7 @@ public class MainData {
         IlmuwanModel mainModel;
         ArrayList<IlmuwanModel> list = new ArrayList<>();
         for (String[] aData : data) {
+
             mainModel = new IlmuwanModel();
             mainModel.setName(aData[0]);
             mainModel.setYear(aData[1]);
